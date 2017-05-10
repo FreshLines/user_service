@@ -1,0 +1,62 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: threecommaapp-v02
+spec:
+  replicas: 1
+  selector:
+    app: threecommaapp
+    version: v0.2
+  template:
+    metadata:
+      labels:
+        app: threecommaapp
+        version: v0.2
+    spec:
+      dnsPolicy: ClusterFirst
+      volumes:
+      - name: linkerd-config
+        configMap:
+          name: "linkerd-config"
+      containers:
+      #- name: hello
+      #  image: dockercloud/hello-world:latest
+      #  ports:
+      #  - name: http
+      #    containerPort: 80
+      # - name: my-user-sevice2
+      #   image: user_service:v2
+      #   ports:
+      #   - containerPort: 80
+      - name: my-user-service4
+        image: user_service:v5
+        ports: 
+        resources:
+          requests:
+            memory: "1Gi"
+          limits:
+            memory: "1Gi"
+        ports:
+          - name: grpc
+            containerPort: 50051
+
+      - name: linkerd
+        image: buoyantio/linkerd:latest
+        args:
+        - "/io.buoyant/linkerd/config/config.yaml"
+        ports:
+        - name: ext
+          containerPort: 8080
+        - name: admin
+          containerPort: 9990
+        volumeMounts:
+        - name: "linkerd-config"
+          mountPath: "/io.buoyant/linkerd/config"
+          readOnly: true
+
+      - name: kubectl
+        image: buoyantio/kubectl:1.2.3
+        args:
+        - "proxy"
+        - "-p"
+        - "8001"

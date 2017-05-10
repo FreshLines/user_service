@@ -1,0 +1,1 @@
+kubectl delete ConfigMap "linkerd-config" && kubectl delete rc threecommaapp && kubectl delete service threecommaapp && kubectl create -f linkerd-service.yaml && kubectl create -f linkerd-config.yaml && kubectl create -f linkerd-replication-controller.yaml

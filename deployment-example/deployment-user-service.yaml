@@ -1,0 +1,56 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  namespace: threecommaapp
+  name: threecommaapp
+spec:
+  replicas: 2 # Update the replicas from 2 to 4
+  selector:
+    matchLabels: 
+      app: threecommaapp
+      version: v0.1
+  template:
+    metadata:
+      labels:
+        app: threecommaapp
+        version: v0.1
+    spec:
+      dnsPolicy: ClusterFirst
+      volumes:
+      - name: linkerd-config
+        configMap:
+          name: "linkerd-config"
+      containers:
+      - name: my-user-service4
+        image: user_service:v4
+        ports: 
+        resources:
+          requests:
+            memory: "1Gi"
+          limits:
+            memory: "1Gi"
+        ports:
+          - name: grpc
+            containerPort: 50051
+
+      - name: linkerd
+        image: buoyantio/linkerd:latest
+        args:
+        - "/io.buoyant/linkerd/config/config.yaml"
+        ports:
+        - name: ext
+          containerPort: 8080
+        - name: admin
+          containerPort: 9990
+        volumeMounts:
+        - name: "linkerd-config"
+          mountPath: "/io.buoyant/linkerd/config"
+          readOnly: true
+
+      - name: kubectl
+        image: buoyantio/kubectl:1.2.3
+        args:
+        - "proxy"
+        - "-p"
+        - "8001"
+
