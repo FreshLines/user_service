@@ -43,6 +43,8 @@ var user = grpc.load(PROTO_PATH).user;
 var client = new user.User('localhost:50051',
                                        grpc.credentials.createInsecure());
 
+var users_to_delete = [];
+
 console.log(client);
 
 var COORD_FACTOR = 1e7;
@@ -60,9 +62,11 @@ function runSetUser(callback) {
       callback(error);
       return;
     }
+    console.log(user);
     if (user.first_name === '') {
       console.log('Found no user');
     } else {
+      users_to_delete.push(user);
       console.log('Found user after create called ' + user.first_name);
     }
     next();
@@ -93,6 +97,31 @@ function runListUsers(callback) {
       console.log('Found user in list called ' + user.first_name);
   });
   call.on('end', callback);
+}
+
+/**
+ * Run the getuser demo. Calls getuser with a point known to have a
+ * user and a point known not to have a user.
+ * @param {function} callback Called when this demo is complete
+ */
+function runDeleteUser(callback) {
+  var next = _.after(2, callback);
+  function userCallback(error, user) {
+    if (error) {
+        console.log(error);
+      callback(error);
+      return;
+    }
+    console.log('successfully deleted the user');
+    next();
+  }
+  console.log("aaaaaaaaaaaaaaaaaa");
+  console.log(users_to_delete);
+
+  _.each(users_to_delete,function(user) {
+    console.log(user);
+    client.deleteUser(user, userCallback);
+  });
 }
 
 // /**
@@ -213,6 +242,7 @@ function main() {
   async.series([
     runSetUser,
     runListUsers,
+    runDeleteUser,
     // runRecordRoute,
     // runRouteChat
   ]);
@@ -225,3 +255,5 @@ if (require.main === module) {
 exports.runSetUser = runSetUser;
 
 exports.runListUsers = runListUsers;
+
+exports.runDeleteUser = runDeleteUser;

@@ -17,6 +17,7 @@ module.exports = function (app) {
   console.log("okok");
   routeServer.handlers['/user.User/SetUser'].func = setUser
   routeServer.handlers['/user.User/ListUsers'].func = listUsers
+  routeServer.handlers['/user.User/DeleteUser'].func = deleteUser
 };
 
 
@@ -40,20 +41,69 @@ function setUser(call,callback) {
           return grpc.status.UNKNOWN;
       }
 
+      //Lets find the latest user now that its been inserted
+      models.instance.User.find({email: user.email}, function(err, inserted_users){
+          //user is an array of plain objects taken from the materialized view
+
+          if(err) {
+              console.log(err);
+              // res.sendStatus(500);
+              // return;
+              return grpc.status.UNKNOWN;
+          }
+
+          
+          UserResponse = {
+            id: inserted_users[0].id + '',
+            first_name: inserted_users[0].first_name,
+            last_name: inserted_users[0].last_name,
+            email: inserted_users[0].email
+          }
+
+          callback(null, UserResponse);
+      });
+
   });
 
-  UserResponse = {
-    id: user.id,
-    first_name: user.first_name,
-    last_name: user.last_name,
-    email: user.email
-  }
 
-  callback(null, UserResponse);
+
+
+  
+
+  
 
   // return user;
 
 }
+
+function deleteUser(call,callback) {
+  console.log(call.request['id']);
+  models.instance.User.findOne({id: models.uuidFromString(call.request['id'])}, function(err, user){
+    if(err) {
+      console.log(err);
+      //TODO: better response codes for these items
+      return grpc.status.UNKNOWN;
+    }
+    if(!user) {
+      console.log(err);
+      return grpc.status.UNKNOWN;
+    }
+    user.delete(function(err){
+      if(err) {
+        console.log(err);
+        return grpc.status.UNKNOWN;
+      }
+    });
+
+    DeletedResponse = {
+
+    }
+    
+    callback(null, DeletedResponse);
+  });
+
+}
+
 
 function listUsers(call,callback) {
    var query = {

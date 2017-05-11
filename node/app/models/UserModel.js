@@ -9,5 +9,12 @@ module.exports = {
         email     : "text"
     },
     key:["id"],
-    table_name: "users"
+    table_name: "users",
+    indexes: ["email"],
+    materialized_views: {
+        users_descending: {
+            select: ["id","email","first_name","last_name"],
+            key : ["id","email"],
+        }
+    },
 }
