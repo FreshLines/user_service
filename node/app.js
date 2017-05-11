@@ -5,7 +5,10 @@ var express = require('express'),
   config = require('./config/config'),
   glob = require('glob'),
   fs = require('fs'),
-  path = require('path');
+  path = require('path'),
+  grpc = require('grpc');
+  
+var grpc_config = require('./config/grpc.js')(config);
 
 
 var models = require('express-cassandra');
@@ -43,30 +46,63 @@ model_files.forEach(function (model) {
 });
 var app = express();
 
+
+
 app.set('models', models); 
+console.log(grpc_config.getServer);
+
+var routeServer = grpc_config.getServer();
+
+console.log(routeServer);
+
+app.set('routeServer', routeServer); 
+
+console.log(app.models);
+console.log(app.routeServer);
+
+console.log(app.get('routeServer'));
 
 
+//TODO:  Get rid of express completely.
+//For sake of demo leveraging for collecting models and controllers
 module.exports = require('./config/express')(app, config);
 
 
-const options = {
-    // we don't need an ssl option
-    // key: fs.readFileSync('./http2-express/server.key'),
-    // cert:  fs.readFileSync('./http2-express/server.crt')
-    spdy: {
-        plain: true,
-        ssl: false
-    }
-}
+// const options = {
+//     // we don't need an ssl option
+//     // key: fs.readFileSync('./http2-express/server.key'),
+//     // cert:  fs.readFileSync('./http2-express/server.crt')
+//     spdy: {
+//         plain: true,
+//         ssl: false
+//     }
+// }
 
-spdy
-  .createServer(options, app)
-  .listen(config.port, (error) => {
-    if (error) {
-      console.error(error)
-      return process.exit(1)
-    } else {
-      console.log('Listening on port: ' + config.port + '.')
-    }
-  })
+// spdy
+//   .createServer(options, app)
+//   .listen(config.port, (error) => {
+//     if (error) {
+//       console.error(error)
+//       return process.exit(1)
+//     } else {
+//       console.log('Listening on port: ' + config.port + '.')
+//     }
+//   })
+
+
+if (require.main === module) {
+  // If this is run as a script, start a server on an unused port
+  
+  routeServer.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure());
+  // var argv = parseArgs(process.argv, {
+  //   string: 'db_path'
+  // });
+  // fs.readFile(path.resolve(argv.db_path), function(err, data) {
+  //   if (err) throw err;
+  //   feature_list = JSON.parse(data);
+  //   routeServer.start();
+  // });
+  console.log('Listening on port: 50051')
+  routeServer.start();
+}
 
