@@ -1,9 +1,9 @@
 pipeline {
-    agent { docker 'node:6.10.0' }
+    agent any
     stages {
-        stage('build') {
+        stage('Build') {
             steps {
-                echo 'build'
+                echo 'Building'
             }
         }
         stage('Test') {
@@ -17,7 +17,6 @@ pipeline {
             }
         }
     }
-
     post {
         always {
             echo 'One way or another, I have finished'
@@ -30,8 +29,7 @@ pipeline {
             echo 'I am unstable :/'
         }
         failure {
-            echo 'I failed :('
-            mail to: 'scott@frshlns.com',
+	  mail to: 'scott@frshlns.com',
              subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
              body: "Something is wrong with ${env.BUILD_URL}"
         }
@@ -39,5 +37,4 @@ pipeline {
             echo 'Things were different before...'
         }
     }
-
 }
