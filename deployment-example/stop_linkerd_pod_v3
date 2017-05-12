@@ -1,0 +1,1 @@
+kubectl delete ConfigMap "linkerd-config-v3" --namespace=threecommaapp && kubectl delete deployment threecommaapp-v3 --namespace=threecommaapp && kubectl delete service threecommaapp-v3 --namespace=threecommaapp

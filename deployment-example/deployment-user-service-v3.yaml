@@ -2,24 +2,24 @@ apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   namespace: threecommaapp
-  name: threecommaapp
+  name: threecommaapp-v3
 spec:
   replicas: 2 # Update the replicas from 2 to 4
   selector:
     matchLabels: 
       app: threecommaapp
-      version: v0.1
+      version: v0.3
   template:
     metadata:
       labels:
         app: threecommaapp
-        version: v0.1
+        version: v0.3
     spec:
       dnsPolicy: ClusterFirst
       volumes:
-      - name: linkerd-config
+      - name: linkerd-config-v3
         configMap:
-          name: "linkerd-config"
+          name: "linkerd-config-v3"
       containers:
       - name: my-user-service7
         image: user_service:v7
@@ -43,7 +43,7 @@ spec:
         - name: admin
           containerPort: 9990
         volumeMounts:
-        - name: "linkerd-config"
+        - name: "linkerd-config-v3"
           mountPath: "/io.buoyant/linkerd/config"
           readOnly: true
 

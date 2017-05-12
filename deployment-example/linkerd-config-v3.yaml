@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linkerd-config-v3
+  namespace: threecommaapp
+data:
+  config.yaml: |-
+    admin:
+      port: 9990
+
+    namers:
+    - kind: io.l5d.k8s
+      experimental: true
+      host: 127.0.0.1
+      port: 8001
+
+    routers:
+    # - protocol: http
+    #   servers:
+    #   - port: 8080
+    #     ip: 0.0.0.0
+    #   dtab: |
+    #     /iface      => /#/io.l5d.k8s/default;
+    #     /svc        => /iface/http;
+    - protocol: h2
+      experimental: true
+      label: grpc
+      client:
+        loadBalancer:
+          kind: ewma
+          maxEffort: 10
+          decayTimeMs: 15000
+      servers:
+        - port: 8080
+          ip: 0.0.0.0
+      dtab: |
+        # this directs http2 traffic straight to the specified service
+        # this can be changed to read the service name header and redirect
+        # traffic to different services based on that:
+        # /srv => /#/io.l5d.k8s/<namespace>/service;
+        # /h2 => /srv ;
+        /svc => /#/io.l5d.k8s/threecommaapp/grpc/threecommaapp-v3;

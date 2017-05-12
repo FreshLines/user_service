@@ -1,0 +1,1 @@
+kubectl create -f linkerd-service-v3.yaml && kubectl create -f linkerd-config-v3.yaml && kubectl create -f deployment-user-service-v3.yaml
