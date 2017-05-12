@@ -25,3 +25,21 @@ kubectl rollout status deployment/threecommaapp --namespace=threecommaapp
 # Scale up and down a deployments replicas
 
 kubectl scale deployment threecommaapp-v3 --replicas 1
+
+# Rolling update by chaging the existing config
+
+    # Change the image
+    kubectl set image deployment nginx nginx=nginx:1.11.5 --record
+
+    # edit the config file
+    kubectl edit deployment <deployment> --record
+
+    # Apply the next version, This will add the new nodes without removing the existing.  Make sure you update the version in the config.
+    # This is also the way to do a canary rollout, then you can leave it up, scale it up and scale the others down.
+    kubectl apply -f nginx.yaml --record
+
+# Undo rolling update
+
+    kubectl rollout undo deployment <deployment>
+
+

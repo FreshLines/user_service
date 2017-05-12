@@ -48,6 +48,8 @@ kubectl rolling-update threecommaapp --update-period=86400s -f linkerd-replicati
 kubectl rolling-update threecommaapp-v02 threecommaapp-v03 --rollback
 
 
+
+
     
 
 
